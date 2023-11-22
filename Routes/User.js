@@ -4,6 +4,7 @@ const userController = require('../Controller/User');
 const { auth } = require('../Middleware/User.Auth');
 
 userRouter.post('/createNewUser',userController.createNewUser)
-.get('/verifyUserAuth',auth,userController.verifyUserAuth);
+.get('/verifyUserAuth',auth,userController.verifyUserAuth)
+.post('/loginUser',userController.loginUser);
 
 exports.userRoutes = userRouter;
