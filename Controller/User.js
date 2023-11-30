@@ -102,6 +102,7 @@ exports.loginUser = async (req, res) => {
           $set: { jwToken: newUserToken },
         });
         user.jwToken = newUserToken;
+        delete user.Password;
         res.json({
           data: user,
           userLoginSuccess: true,
@@ -122,6 +123,59 @@ exports.loginUser = async (req, res) => {
     res.json({
       userLoginSuccess: false,
       errorMessage: error.message,
+    });
+  }
+};
+
+exports.checkUsernameAvailablity = async (req, res) => {
+  const { userName } = req.params;
+  try {
+    const user = await User.findOne({ userName: userName });
+    if (user) {
+      res.json(false);
+    } else {
+      res.json(true);
+    }
+  } catch (error) {
+    res.json({ someErrorOccured: error.message });
+  }
+};
+
+exports.editUser = async (req, res) => {
+  const { Name, userName, profilePicture, Biography } = req.body; // new data which user wants to update
+  const userData = req.userData.user; // old data which is get by token
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    // i m using auth middlewares newly created token but then i realised that token made with old name and username that will make problem in
+    // future -- so i created a new token here with new info---
+    const newUserToken = jwt.sign(
+      { user: { userName: userName, Name: Name } },
+      privateKey,
+      { algorithm: "RS256", expiresIn: `15m` }
+    );
+    // here is update ones fields
+    const updateFields = {
+      userName: userName,
+      Name: Name,
+      profilePicture: profilePicture,
+      Biography: Biography,
+      jwToken:newUserToken
+    };
+    const UpdatedUser = await User.findByIdAndUpdate(user._id, updateFields, {
+      new: true,
+    });
+    const userr ={ ...UpdatedUser};
+    userr._doc.updated = 'true',
+    delete userr._doc.Password;
+    console.log(userr);
+    res.json({
+      data: userr._doc,
+      userUpdated: true,
+    });
+  } catch (error) {
+    res.json({
+      userUpdated: false,
+      errorMessage: error.Message,
     });
   }
 };

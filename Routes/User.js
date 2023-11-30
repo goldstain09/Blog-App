@@ -5,6 +5,8 @@ const { auth } = require('../Middleware/User.Auth');
 
 userRouter.post('/createNewUser',userController.createNewUser)
 .get('/verifyUserAuth',auth,userController.verifyUserAuth)
-.post('/loginUser',userController.loginUser);
+.post('/loginUser',userController.loginUser)
+.get('/checkUserNameAvailableOrNOT/:userName',userController.checkUsernameAvailablity)
+.put('/editUser',auth,userController.editUser);
 
 exports.userRoutes = userRouter;

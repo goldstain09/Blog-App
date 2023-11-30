@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
   Followings: { type: [Object] },
   profilePicture: {type:String, default:'https://firebasestorage.googleapis.com/v0/b/blog-app-2d912.appspot.com/o/icon.webp?alt=media&token=99270953-b1b0-40bd-99a8-e381c255afcb'},
   jwToken: String,
-  Biography: String,
+  Biography:{ type:String,default:""},
   createdAt: { type: Date, default: Date.now },
 });
 

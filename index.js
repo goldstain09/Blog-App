@@ -13,11 +13,12 @@ async function main() {
   await mongoose.connect(process.env.MONGO);
   console.log("db connected");
 }
-main().catch((err) => {});
+main().catch((err) => {console.log(err);});
 
 
 server.use(cors());
 server.use(express.json()); 
+// server.use(express); 
 
 // settng routes
 server.use('/v1/UserApi',userRoutes.userRoutes);
