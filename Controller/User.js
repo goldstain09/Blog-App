@@ -2,6 +2,11 @@
 const userModal = require("../Modal/User");
 const User = userModal.User;
 
+// otp verification
+const otpGenerator = require("otp-generator");
+// mail sender
+const nodemailer = require("nodemailer");
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const util = require("util");
@@ -159,15 +164,13 @@ exports.editUser = async (req, res) => {
       Name: Name,
       profilePicture: profilePicture,
       Biography: Biography,
-      jwToken:newUserToken
+      jwToken: newUserToken,
     };
     const UpdatedUser = await User.findByIdAndUpdate(user._id, updateFields, {
       new: true,
     });
-    const userr ={ ...UpdatedUser};
-    userr._doc.updated = 'true',
-    delete userr._doc.Password;
-    console.log(userr);
+    const userr = { ...UpdatedUser };
+    (userr._doc.updated = "true"), delete userr._doc.Password;
     res.json({
       data: userr._doc,
       userUpdated: true,
@@ -176,6 +179,87 @@ exports.editUser = async (req, res) => {
     res.json({
       userUpdated: false,
       errorMessage: error.Message,
+    });
+  }
+};
+
+exports.AddEmailOtpVerification = async (req, res) => {
+  // const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  const email = req.params.email;
+
+  try {
+    const generateOTP = () => {
+      return otpGenerator.generate(6, {
+        upperCase: false,
+        specialChars: false,
+        alphabets: false,
+        digits: true,
+        length: 6,
+        secret: true,
+        expiration: 300,
+        characters: "0123456789",
+      });
+    };
+    const otp = generateOTP();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Bloggo Basho's Email Verification OTP",
+      html: `<h1>Your OTP is: ${otp}</h1>`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        throw Error(error.message);
+      } else {
+        res.json({
+          message: "OTP is sent!",
+          OtpSent: true,
+          otpInfo: { otp: otp, info: info },
+          jwToken: newUserToken,
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      message: "Something went wrong, Please try again after sometime!",
+      OtpSent: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.addUserEmail = async (req, res) => {
+  const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  const email = req.body.Email;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    const updateData = {
+      Email: email,
+      jwToken: newUserToken,
+    };
+    const UpdatedUser = await User.findByIdAndUpdate(user._id, updateData, { new: true }); // {$set:{Email:email}}
+    const userr = {...UpdatedUser};
+    (userr._doc.emailUpdated = "true"), delete userr._doc.Password;
+    res.json({
+      data: userr._doc,
+      emailUpdated: true,
+    });
+  } catch (error) {
+    res.json({
+      errorMessage: error.message,
+      emailUpdated: false,
     });
   }
 };
