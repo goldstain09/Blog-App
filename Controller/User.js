@@ -249,8 +249,10 @@ exports.addUserEmail = async (req, res) => {
       Email: email,
       jwToken: newUserToken,
     };
-    const UpdatedUser = await User.findByIdAndUpdate(user._id, updateData, { new: true }); // {$set:{Email:email}}
-    const userr = {...UpdatedUser};
+    const UpdatedUser = await User.findByIdAndUpdate(user._id, updateData, {
+      new: true,
+    }); // {$set:{Email:email}}
+    const userr = { ...UpdatedUser };
     (userr._doc.emailUpdated = "true"), delete userr._doc.Password;
     res.json({
       data: userr._doc,
@@ -260,6 +262,235 @@ exports.addUserEmail = async (req, res) => {
     res.json({
       errorMessage: error.message,
       emailUpdated: false,
+    });
+  }
+};
+
+exports.removeUserEmail = async (req, res) => {
+  const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    const updateData = {
+      Email: "",
+      jwToken: newUserToken,
+    };
+    const UpdatedUser = await User.findByIdAndUpdate(user._id, updateData, {
+      new: true,
+    });
+    const Userr = { ...UpdatedUser };
+    delete Userr._doc.Password;
+    res.json({
+      data: Userr._doc,
+      emailDeleted: true,
+    });
+  } catch (error) {
+    res.json({
+      emailDeleted: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    const result = await new Promise((resolve, reject) => {
+      bcrypt.compare(currentPassword, user.Password, (err, result) => {
+        if (err) {
+          throw Error("Something went wrong! " + err.message);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+    if (result) {
+      const SaltRounds = 14;
+      const salt = await genSalt(SaltRounds);
+      const hashPas = await hashAsync(newPassword, salt);
+      if (hashPas) {
+        const updateData = {
+          jwToken: newUserToken,
+          Password: hashPas,
+        };
+        const updatedUser = await User.findByIdAndUpdate(user._id, updateData, {
+          new: true,
+        });
+        const userr = { ...updatedUser };
+        delete userr._doc.Password;
+        userr._doc.passwordUpdated = "true";
+        res.json({
+          data: userr._doc,
+          passwordUpdated: true,
+        });
+      }
+    } else {
+      const userr = { ...user };
+      userr._doc.wrongPassword = "true";
+      delete userr._doc.Password;
+      res.json({
+        data: userr._doc,
+        passwordUpdated: false,
+        wrongPassword: true,
+      });
+    }
+  } catch (error) {
+    res.json({
+      passwordUpdated: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.changePasswordOtpVerification = async (req, res) => {
+  const email = req.params.email;
+  // const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  try {
+    const generateOTP = () => {
+      return otpGenerator.generate(6, {
+        upperCase: false,
+        specialChars: false,
+        alphabets: false,
+        digits: true,
+        length: 6,
+        secret: true,
+        expiration: 300,
+        characters: "0123456789",
+      });
+    };
+    const otp = generateOTP();
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASSWORD,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "Bloggo Basho's OTP Verification for Resetting Password!",
+      html: `<h1>Your OTP is ${otp} [for changing password]</h1>`,
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        throw Error(err.message);
+      } else {
+        res.json({
+          otpInfo: { otp: otp, info: info },
+          otpSent: true,
+          message: "OTP is sent!",
+          jwToken: newUserToken,
+        });
+      }
+    });
+  } catch (error) {
+    res.json({
+      errorMessage: error.message,
+      otpSent: false,
+      message: "Something went wrong!",
+    });
+  }
+};
+
+exports.forgetChangeUserPassword = async (req, res) => {
+  const userData = req.userData.user;
+  const newUserToken = req.newUserToken;
+  const newPassword = req.body.newPassword;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    const SaltRounds = 14;
+    const salt = await genSalt(SaltRounds);
+    const hashPas = await hashAsync(newPassword, salt);
+    if (hashPas) {
+      const updateData = {
+        jwToken: newUserToken,
+        Password: hashPas,
+      };
+      const UpdatedUser = await User.findByIdAndUpdate(user._id, updateData, {
+        new: true,
+      });
+      const userr = { ...UpdatedUser };
+      delete userr._doc.Password;
+      userr._doc.forgetPasswordUpdated = "true";
+      res.json({
+        passwordUpdated: true,
+        data: userr._doc,
+      });
+    }
+  } catch (error) {
+    res.json({
+      passwordUpdated: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.checkPasswordForDeleteAccount = async (req, res) => {
+  const userData = req.userData.user;
+  // const newUserToken = req.newUserToken;
+  const password = req.body.password;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+
+    const result = await new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.Password, (err, resultt) => {
+        if (err) {
+          throw Error("Something went wrong! " + err.message);
+        } else {
+          resolve(resultt);
+        }
+      });
+    });
+    if (result) {
+      // const UpdatedUser = await User.findByIdAndUpdate(user._id,{$set:{jwToken:newUserToken}}, {new:true});
+      // here i didn't update new token and also didn't sent it to response-- only use auth middleware for user info!!
+
+      // also one more thing that why im using ... operator here, it's bczz i'm not able to direclty delete password property in "user" so that's why
+      // i take all values from user to userr and then delete password !
+      const userr = { ...user };
+      delete userr._doc.Password;
+      userr._doc.passwordCorrect = "true";
+      res.json({
+        data: userr._doc,
+        passwordCorrect: true,
+      });
+    } else {
+      const userr = { ...user };
+      delete userr._doc.Password;
+      userr._doc.passwordIncorrect = "true";
+      res.json({
+        data: userr._doc,
+        passwordCorrect: false,
+      });
+    }
+  } catch (error) {
+    res.json({
+      passwordCorrect: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.deleteUserAccount = async (req, res) => {
+  const userData = req.userData.user;
+  try {
+    const user = await User.findOneAndDelete({ userName: userData.userName });
+    const userr = { ...user };
+    delete userr._doc.Password;
+    userr._doc.accountDeleted = "true";
+    res.json({
+      accountDeleted: true,
+      data: userr._doc,
+    });
+  } catch (error) {
+    res.json({
+      accountDeleted: false,
+      errorMessage: error.message,
     });
   }
 };

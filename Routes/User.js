@@ -9,6 +9,12 @@ userRouter.post('/createNewUser',userController.createNewUser)
 .get('/checkUserNameAvailableOrNOT/:userName',userController.checkUsernameAvailablity)
 .put('/editUser',auth,userController.editUser)
 .get('/AddEmailOtpVerification/:email',auth,userController.AddEmailOtpVerification)
-.put('/addUserEmail',auth, userController.addUserEmail);
+.put('/addUserEmail',auth, userController.addUserEmail)
+.put('/removeUserEmail',auth, userController.removeUserEmail)
+.put('/changeUserPassword',auth, userController.changePassword)
+.get('/changePasswordOtpVerification/:email',auth, userController.changePasswordOtpVerification)
+.put('/forgetChangeUserPassword',auth, userController.forgetChangeUserPassword)
+.put('/checkPasswordForDeleteAccount',auth,userController.checkPasswordForDeleteAccount)
+.delete('/deleteUserAccount',auth,userController.deleteUserAccount);
 
 exports.userRoutes = userRouter;
