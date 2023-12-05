@@ -27,7 +27,7 @@ exports.createNewUser = async (req, res) => {
     const userToken = jwt.sign(
       { user: { userName: userName, Name: Name } },
       privateKey,
-      { algorithm: "RS256", expiresIn: `15m` }
+      { algorithm: "RS256", expiresIn: `1h` }
     );
     const user = new User(req.body);
     user.jwToken = userToken;
@@ -100,7 +100,7 @@ exports.loginUser = async (req, res) => {
         const newUserToken = jwt.sign(
           { user: { userName: user.userName, Name: user.Name } },
           privateKey,
-          { algorithm: "RS256", expiresIn: `15m` }
+          { algorithm: "RS256", expiresIn: `1h` }
         );
         // now update that token in database
         await User.findByIdAndUpdate(user._id, {
@@ -156,7 +156,7 @@ exports.editUser = async (req, res) => {
     const newUserToken = jwt.sign(
       { user: { userName: userName, Name: Name } },
       privateKey,
-      { algorithm: "RS256", expiresIn: `15m` }
+      { algorithm: "RS256", expiresIn: `1h` }
     );
     // here is update ones fields
     const updateFields = {
@@ -217,7 +217,6 @@ exports.AddEmailOtpVerification = async (req, res) => {
       subject: "Bloggo Basho's Email Verification OTP",
       html: `<h1>Your OTP is: ${otp}</h1>`,
     };
-
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         throw Error(error.message);
