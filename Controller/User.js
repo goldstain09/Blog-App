@@ -1,5 +1,5 @@
 // modals
-const userModal = require("../Modal/User");
+const userModal = require("../Model/User");
 const User = userModal.User;
 
 // otp verification
