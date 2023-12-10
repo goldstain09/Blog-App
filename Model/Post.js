@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const postSchema = new mongoose.Schema({
   userName: { type: String, required: true },
+  userId:{type:String,required:true},
   userProfilePicture: { type: String, required: true },
   postTitle: { type: String, required: true },
   postCaption: { type: String, required: true },

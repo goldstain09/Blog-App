@@ -1,6 +1,8 @@
 // modals
-const userModal = require("../Model/User");
-const User = userModal.User;
+const postModel = require("../Model/Post");
+const userModel = require("../Model/User");
+const User = userModel.User;
+const Post = postModel.Post;
 
 // otp verification
 const otpGenerator = require("otp-generator");
@@ -478,6 +480,9 @@ exports.checkPasswordForDeleteAccount = async (req, res) => {
 exports.deleteUserAccount = async (req, res) => {
   const userData = req.userData.user;
   try {
+    // all posts of this user
+    const allPosts = await Post.deleteMany({ userName: userData.userName });
+    console.log(allPosts);
     const user = await User.findOneAndDelete({ userName: userData.userName });
     const userr = { ...user };
     delete userr._doc.Password;
@@ -489,6 +494,27 @@ exports.deleteUserAccount = async (req, res) => {
   } catch (error) {
     res.json({
       accountDeleted: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.getBloggerData = async (req, res) => {
+  const bloggerId = req.query.bloggerId;
+  try {
+    const blogger = await User.findById(bloggerId);
+    const bloggerData = { ...blogger };
+    delete bloggerData._doc.Password;
+    delete bloggerData._doc.Email;
+    delete bloggerData._doc.likedPost;
+    delete bloggerData._doc.savedPost;
+    delete bloggerData._doc.jwToken;
+    delete bloggerData._doc.createdAt;
+    res.json({
+      bloggerData: bloggerData._doc,
+    });
+  } catch (error) {
+    res.json({
       errorMessage: error.message,
     });
   }
