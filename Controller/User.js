@@ -160,6 +160,15 @@ exports.editUser = async (req, res) => {
       privateKey,
       { algorithm: "RS256", expiresIn: `1h` }
     );
+    // also updating new username in my posts so that post didnot show older username or profile picture
+    await Post.updateMany(
+      { userId: user._id },
+      { $set: { userName: userName } }
+    );
+    await Post.updateMany(
+      { userId: user._id },
+      { $set: { userProfilePicture: profilePicture } }
+    ); // these two steps added after created posts !!
     // here is update ones fields
     const updateFields = {
       userName: userName,
@@ -512,6 +521,22 @@ exports.getBloggerData = async (req, res) => {
     delete bloggerData._doc.createdAt;
     res.json({
       bloggerData: bloggerData._doc,
+    });
+  } catch (error) {
+    res.json({
+      errorMessage: error.message,
+    });
+  }
+};
+
+// function for only showing user data to the comments
+exports.getUserUserNameAndDp = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findById(userId);
+    res.json({
+      profilePicture: user.profilePicture,
+      userName: user.userName,
     });
   } catch (error) {
     res.json({

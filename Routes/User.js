@@ -16,6 +16,7 @@ userRouter.post('/createNewUser',userController.createNewUser)
 .put('/forgetChangeUserPassword',auth, userController.forgetChangeUserPassword)
 .put('/checkPasswordForDeleteAccount',auth,userController.checkPasswordForDeleteAccount)
 .delete('/deleteUserAccount',auth,userController.deleteUserAccount)
-.get('/getBloggerData',auth,userController.getBloggerData);
+.get('/getBloggerData',auth,userController.getBloggerData)
+.get('/getUserUserNameAndDp/:userId',userController.getUserUserNameAndDp);
 
 exports.userRoutes = userRouter;

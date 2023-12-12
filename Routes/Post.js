@@ -12,6 +12,9 @@ postRouter
   .put("/likePost", auth, postController.likePost)
   .put("/unlikePost", auth, postController.unlikePost)
   .put("/savePost", auth, postController.savePost)
-  .put("/unsavePost", auth, postController.unsavePost);
+  .put("/unsavePost", auth, postController.unsavePost)
+  
+  .put('/postComment',auth,postController.postComment)
+  .put('/deleteComment',auth,postController.deleteComment);
 
 exports.postRoutes = postRouter;
