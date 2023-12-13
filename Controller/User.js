@@ -69,6 +69,7 @@ exports.verifyUserAuth = async (req, res) => {
     delete user.Password;
     await User.findByIdAndUpdate(user._id, { $set: { jwToken: newUserToken } });
     user.jwToken = newUserToken;
+    console.log(user);
     res.json({
       data: user,
       verification: true,
@@ -541,6 +542,115 @@ exports.getUserUserNameAndDp = async (req, res) => {
   } catch (error) {
     res.json({
       errorMessage: error.message,
+    });
+  }
+};
+
+// to follow blogger
+exports.followBlogger = async (req, res) => {
+  const userData = req.userData.user;
+  const { bloggerId } = req.body;
+  try {
+    // user who is following blogger
+    const user = await User.findOne({ userName: userData.userName });
+
+    // the blogger
+    const blogger = await User.findById(bloggerId);
+
+    if (
+      user.Followings.every((item) => item.bloggerId !== bloggerId) &&
+      blogger.Followers.every((item) => item.bloggerId !== user._id)
+    ) {
+      user.Followings.push({
+        bloggerId: bloggerId,
+      });
+
+      blogger.Followers.push({
+        bloggerId: user._id.toString(),
+      });
+
+      const updatedUser = await User.findByIdAndUpdate(
+        user._id,
+        { $set: { Followings: user.Followings } },
+        { new: true }
+      );
+      const userr = { ...updatedUser };
+      delete userr._doc.Password;
+      const updatedBlogger = await User.findByIdAndUpdate(
+        bloggerId,
+        { $set: { Followers: blogger.Followers } },
+        { new: true }
+      );
+      const bloggerr = { ...updatedBlogger };
+      delete bloggerr._doc.Password;
+      delete bloggerr._doc.Email;
+      delete bloggerr._doc.likedPost;
+      delete bloggerr._doc.savedPost;
+      delete bloggerr._doc.jwToken;
+      delete bloggerr._doc.createdAt;
+      res.json({
+        userData: userr._doc,
+        bloggerData: bloggerr._doc,
+        followed: true,
+      });
+    }
+  } catch (error) {
+    res.json({
+      errorMessage: error.message,
+      followed: false,
+    });
+  }
+};
+
+exports.unfollowBlogger = async (req, res) => {
+  const userData = req.userData.user;
+  const { bloggerId } = req.body;
+  try {
+    const user = await User.findOne({ userName: userData.userName });
+    const blogger = await User.findById(bloggerId);
+
+    if (
+      user.Followings.every((item) => item.bloggerId !== bloggerId) &&
+      blogger.Followers.every((item) => item.bloggerId !== user._id)
+    ) {
+    } else {
+      const updatedFollowingOfUser = user.Followings.filter(
+        (item) => item.bloggerId !== bloggerId
+      );
+      const updatedFollowersOfBlogger = blogger.Followers.filter(
+        (item) => item.bloggerId !== user._id.toString()
+      );
+
+      const updatedUser = await User.findByIdAndUpdate(
+        user._id,
+        { $set: { Followings: updatedFollowingOfUser } },
+        { new: true }
+      );
+      const userr = { ...updatedUser };
+      delete userr._doc.Password;
+      const updatedBlogger = await User.findByIdAndUpdate(
+        bloggerId,
+        { $set: { Followers: updatedFollowersOfBlogger } },
+        { new: true }
+      );
+      const bloggerr = { ...updatedBlogger };
+      delete bloggerr._doc.Password;
+      delete bloggerr._doc.Email;
+      delete bloggerr._doc.likedPost;
+      delete bloggerr._doc.savedPost;
+      delete bloggerr._doc.jwToken;
+      delete bloggerr._doc.createdAt;
+
+      res.json({
+        userData: userr._doc,
+        bloggerData: bloggerr._doc,
+        unfollowed: true,
+      });
+    }
+  } catch (error) {
+    res.json({
+      errorMessage: error.message,
+      unfollowed: false,
     });
   }
 };

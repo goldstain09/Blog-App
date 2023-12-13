@@ -17,6 +17,8 @@ userRouter.post('/createNewUser',userController.createNewUser)
 .put('/checkPasswordForDeleteAccount',auth,userController.checkPasswordForDeleteAccount)
 .delete('/deleteUserAccount',auth,userController.deleteUserAccount)
 .get('/getBloggerData',auth,userController.getBloggerData)
-.get('/getUserUserNameAndDp/:userId',userController.getUserUserNameAndDp);
+.get('/getUserUserNameAndDp/:userId',userController.getUserUserNameAndDp)
+.put('/followBlogger',auth,userController.followBlogger)
+.put('/unfollowBlogger',auth,userController.unfollowBlogger);
 
 exports.userRoutes = userRouter;
