@@ -6,6 +6,7 @@ const { auth } = require("../Middleware/User.Auth");
 postRouter
   .post("/PostaBlog", auth, postController.postBlog)
   .get("/getPostData/:postId", auth, postController.getPostData)
+  .get("/getPostDataForCardOnly/:postId",postController.getPostDataForCardOnly)
   .put("/updateBlog", auth, postController.updateBlog)
   .delete("/deleteBlog/:postId", auth, postController.deleteBlog)
   .get("/getAllPosts", auth, postController.getAllPosts)

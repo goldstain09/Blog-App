@@ -69,7 +69,6 @@ exports.verifyUserAuth = async (req, res) => {
     delete user.Password;
     await User.findByIdAndUpdate(user._id, { $set: { jwToken: newUserToken } });
     user.jwToken = newUserToken;
-    console.log(user);
     res.json({
       data: user,
       verification: true,
@@ -651,6 +650,42 @@ exports.unfollowBlogger = async (req, res) => {
     res.json({
       errorMessage: error.message,
       unfollowed: false,
+    });
+  }
+};
+
+exports.getAllBloggersData = async (req, res) => {
+  const userData = req.userData.user;
+  try {
+    const bloggersList = await User.find();
+    const updatedBloggersWithoutMe = bloggersList.filter(
+      (item) => item.userName !== userData.userName
+    );
+    // now removing imp info of users or bloggers
+    updatedBloggersWithoutMe.map((item) => {
+      const blogger = { ...item };
+      delete blogger._doc.Password;
+      delete blogger._doc.jwToken;
+      delete blogger._doc.Email;
+      delete blogger._doc.likedPost;
+      delete blogger._doc.savedPost;
+      delete blogger._doc.myPosts;
+      delete blogger._doc.Followers;
+      delete blogger._doc.Followings;
+      delete blogger._doc.Biography;
+      delete blogger._doc.createdAt;
+
+      return blogger._doc;
+    });
+    // console.log(updatedBloggersWithoutMe);
+    res.json({
+      bloggersList: updatedBloggersWithoutMe,
+      success: true,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      errorMessage: error.message,
     });
   }
 };

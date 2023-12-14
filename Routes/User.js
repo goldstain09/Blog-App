@@ -19,6 +19,7 @@ userRouter.post('/createNewUser',userController.createNewUser)
 .get('/getBloggerData',auth,userController.getBloggerData)
 .get('/getUserUserNameAndDp/:userId',userController.getUserUserNameAndDp)
 .put('/followBlogger',auth,userController.followBlogger)
-.put('/unfollowBlogger',auth,userController.unfollowBlogger);
+.put('/unfollowBlogger',auth,userController.unfollowBlogger)
+.get('/getAllBloggersData',auth,userController.getAllBloggersData);
 
 exports.userRoutes = userRouter;

@@ -25,6 +25,7 @@ exports.postBlog = async (req, res) => {
     const postid = post._id.toString();
     user.myPosts.push({
       postId: postid,
+      postImage: post.postImage,
     });
     const updateData = {
       jwToken: newUsertoken,
@@ -108,9 +109,17 @@ exports.deleteBlog = async (req, res) => {
     const userRemainingPosts = user.myPosts.filter(
       (item) => item.postId !== postId
     );
+    const userRemainingLikedPosts = user.likedPost.filter(
+      (item) => item.postId !== postId
+    );
+    const userRemainingSavedPosts = user.savedPost.filter(
+      (item) => item.postId !== postId
+    );
     const updateData = {
       jwToken: newUsertoken,
       myPosts: userRemainingPosts,
+      likedPost: userRemainingLikedPosts,
+      savedPost: userRemainingSavedPosts,
     };
     const updatedUser = await User.findByIdAndUpdate(user._id, updateData, {
       new: true,
@@ -387,6 +396,22 @@ exports.deleteComment = async (req, res) => {
   } catch (error) {
     res.json({
       commentDeleted: false,
+      errorMessage: error.message,
+    });
+  }
+};
+
+exports.getPostDataForCardOnly = async (req, res) => {
+  const { postId } = req.params;
+  try {
+    const post = await Post.findById(postId);
+    res.json({
+      postId: post._id.toString(),
+      postLikes: post.postLikes,
+      postComments: post.postComments,
+    });
+  } catch (error) {
+    res.json({
       errorMessage: error.message,
     });
   }
