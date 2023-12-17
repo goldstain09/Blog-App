@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require('path');
 
 // routes
 const userRoutes = require("./Routes/User");
@@ -20,10 +21,13 @@ main().catch((err) => {
 
 server.use(cors());
 server.use(express.json());
-// server.use(express);
+server.use(express.static(process.env.STATIC));
 
 // settng routes
 server.use("/v1/UserApi", userRoutes.userRoutes);
 server.use("/v1/PostApi", postRoutes.postRoutes);
+server.use('*', (req,res)=>{
+  res.sendFile(path.resolve(__dirname,'View','index.html'));
+})
 
 server.listen(process.env.PORT || 8080);
