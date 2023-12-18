@@ -9,14 +9,14 @@ const userRoutes = require("./Routes/User");
 const postRoutes = require("./Routes/Post");
 
 const server = express();
-console.log("Server Started");
+// console.log("Server Started");
 
 async function main() {
   await mongoose.connect(process.env.MONGO);
-  console.log("db connected");
+  // console.log("db connected");
 }
 main().catch((err) => {
-  console.log(err);
+  // console.log(err);
 });
 
 server.use(cors());
