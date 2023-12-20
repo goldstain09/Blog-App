@@ -491,7 +491,7 @@ exports.deleteUserAccount = async (req, res) => {
   try {
     // all posts of this user
     const allPosts = await Post.deleteMany({ userName: userData.userName });
-    console.log(allPosts);
+    // console.log(allPosts);
     const user = await User.findOneAndDelete({ userName: userData.userName });
     const userr = { ...user };
     delete userr._doc.Password;
